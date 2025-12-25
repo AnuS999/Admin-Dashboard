@@ -1,11 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SummaryCard from './components/SummaryCard';
 import DataTable from './components/DataTable';
+import LoadingSpinner from './components/LoadingSpinner';
 import { usersData } from './data/dummyData';
 
 function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Start with sidebar closed on mobile, open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    return window.innerWidth >= 1024; // lg breakpoint
+  });
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate loading state
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle menu item click - close sidebar on mobile
+  const handleMenuClick = (menuId) => {
+    setActiveMenu(menuId);
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊' },
@@ -26,6 +48,7 @@ function App() {
       header: 'ID',
       accessor: 'id',
       sortable: true,
+      hideOnMobile: true,
     },
     {
       header: 'Name',
@@ -36,6 +59,10 @@ function App() {
       header: 'Email',
       accessor: 'email',
       sortable: true,
+      hideOnMobile: true,
+      render: (value) => (
+        <span className="break-all sm:break-normal">{value}</span>
+      ),
     },
     {
       header: 'Role',
@@ -63,12 +90,14 @@ function App() {
       header: 'Revenue',
       accessor: 'revenue',
       sortable: true,
+      hideOnMobile: true,
       render: (value) => `$${value.toLocaleString()}`,
     },
     {
       header: 'Created At',
       accessor: 'createdAt',
       sortable: true,
+      hideOnMobile: true,
     },
   ];
 
@@ -77,17 +106,21 @@ function App() {
       {/* Sidebar */}
       <aside
         className={`${
-          sidebarOpen ? 'w-64' : 'w-20'
-        } bg-gray-900 text-white transition-all duration-300 ease-in-out flex flex-col fixed lg:static h-full z-30`}
+          sidebarOpen 
+            ? 'w-64' 
+            : 'w-0 lg:w-20'
+        } bg-gray-900 text-white transition-all duration-300 ease-in-out flex flex-col fixed lg:static h-full z-30 lg:z-auto overflow-hidden lg:overflow-visible`}
       >
+        {/* Sidebar Content */}
+        <div className={`${sidebarOpen ? 'flex' : 'hidden lg:flex'} flex-col h-full ${sidebarOpen ? 'w-64' : 'lg:w-20'}`}>
         {/* Sidebar Header */}
-        <div className="p-4 flex items-center justify-between border-b border-gray-700">
+        <div className={`p-4 sm:p-5 border-b border-gray-700 ${sidebarOpen ? 'flex items-center justify-between' : 'lg:flex lg:justify-center'}`}>
           {sidebarOpen && (
-            <h1 className="text-xl font-bold text-white">Admin Panel</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight whitespace-nowrap">Admin Panel</h1>
           )}
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-800 transition-colors flex-shrink-0"
             aria-label="Toggle sidebar"
           >
             {sidebarOpen ? '←' : '→'}
@@ -95,21 +128,22 @@ function App() {
         </div>
 
         {/* Menu Items */}
-        <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 overflow-y-auto p-3 sm:p-4">
+          <ul className="space-y-1.5 sm:space-y-2">
             {menuItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveMenu(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  onClick={() => handleMenuClick(item.id)}
+                  className={`w-full flex items-center ${sidebarOpen ? 'gap-2.5 sm:gap-3 justify-start' : 'lg:justify-center'} gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all duration-200 text-sm sm:text-base ${
                     activeMenu === item.id
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-lg font-semibold'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white font-medium'
                   }`}
+                  title={!sidebarOpen ? item.label : ''}
                 >
-                  <span className="text-xl flex-shrink-0">{item.icon}</span>
+                  <span className="text-lg sm:text-xl flex-shrink-0">{item.icon}</span>
                   {sidebarOpen && (
-                    <span className="font-medium">{item.label}</span>
+                    <span>{item.label}</span>
                   )}
                 </button>
               </li>
@@ -118,26 +152,27 @@ function App() {
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-semibold">A</span>
+        <div className="p-3 sm:p-4 border-t border-gray-700">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-semibold text-sm sm:text-base">A</span>
             </div>
             {sidebarOpen && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">Admin User</p>
+                <p className="text-xs sm:text-sm font-semibold text-white truncate">Admin User</p>
                 <p className="text-xs text-gray-400 truncate">admin@example.com</p>
               </div>
             )}
           </div>
         </div>
+        </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden lg:ml-0">
         {/* Top Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 px-4 lg:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-5 lg:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             {/* Mobile menu button */}
             <button
               onClick={toggleSidebar}
@@ -145,7 +180,7 @@ function App() {
               aria-label="Toggle sidebar"
             >
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5 sm:w-6 sm:h-6"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -158,17 +193,17 @@ function App() {
                 />
               </svg>
             </button>
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
               {menuItems.find((item) => item.id === activeMenu)?.label || 'Dashboard'}
             </h2>
           </div>
 
           {/* Profile Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {/* Notifications */}
             <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
               <svg
-                className="w-6 h-6 text-gray-600"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -184,12 +219,12 @@ function App() {
             </button>
 
             {/* Profile Icon */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center cursor-pointer hover:ring-2 ring-blue-300 transition-all">
-                <span className="text-white font-semibold text-sm">AU</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center cursor-pointer hover:ring-2 ring-blue-300 transition-all">
+                <span className="text-white font-semibold text-xs sm:text-sm">AU</span>
               </div>
               <div className="hidden md:block">
-                <p className="text-sm font-medium text-gray-800">Admin User</p>
+                <p className="text-sm font-semibold text-gray-800">Admin User</p>
                 <p className="text-xs text-gray-500">Administrator</p>
               </div>
             </div>
@@ -197,10 +232,14 @@ function App() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6 bg-gray-50">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 bg-gray-50">
           <div className="max-w-7xl mx-auto">
+            {isLoading ? (
+              <LoadingSpinner size="lg" message="Loading dashboard..." />
+            ) : (
+              <>
             {/* Dashboard Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 mb-5 sm:mb-6">
               <SummaryCard
                 title="Total Users"
                 value="12,345"
@@ -241,8 +280,8 @@ function App() {
 
             {/* Data Table */}
             {activeMenu === 'dashboard' && (
-              <div className="mb-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 tracking-tight">
                   Users Data Table
                 </h3>
                 <DataTable data={usersData} columns={tableColumns} itemsPerPage={10} />
@@ -251,22 +290,24 @@ function App() {
 
             {/* Main Content Card for other menus */}
             {activeMenu !== 'dashboard' && (
-              <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4 tracking-tight">
                   Welcome to {menuItems.find((item) => item.id === activeMenu)?.label}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed">
                   This is the main content area for your admin dashboard. You can add charts, tables, forms, or any other content here.
                 </p>
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500">
-                    <strong>Active Menu:</strong> {menuItems.find((item) => item.id === activeMenu)?.label}
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-4 border border-gray-200">
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium mb-2">
+                    <strong className="font-semibold">Active Menu:</strong> {menuItems.find((item) => item.id === activeMenu)?.label}
                   </p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    <strong>Sidebar Status:</strong> {sidebarOpen ? 'Expanded' : 'Collapsed'}
+                  <p className="text-xs sm:text-sm text-gray-600 font-medium">
+                    <strong className="font-semibold">Sidebar Status:</strong> {sidebarOpen ? 'Expanded' : 'Collapsed'}
                   </p>
                 </div>
               </div>
+            )}
+            </>
             )}
           </div>
         </main>

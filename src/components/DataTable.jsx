@@ -95,19 +95,19 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Search Bar */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
+      <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
         <div className="relative">
           <input
             type="text"
             placeholder="Search..."
             value={searchTerm}
             onChange={handleSearch}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder-gray-400"
           />
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -131,12 +131,12 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
                 <th
                   key={column.accessor}
                   onClick={() => column.sortable !== false && handleSort(column.accessor)}
-                  className={`px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  className={`px-3 sm:px-4 md:px-6 py-3 sm:py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider ${
                     column.sortable !== false ? 'cursor-pointer hover:bg-gray-100 transition-colors' : ''
-                  }`}
+                  } ${column.hideOnMobile ? 'hidden md:table-cell' : ''}`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span>{column.header}</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="whitespace-nowrap">{column.header}</span>
                     {column.sortable !== false && getSortIcon(column.accessor)}
                   </div>
                 </th>
@@ -153,9 +153,11 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
                   {columns.map((column) => (
                     <td
                       key={column.accessor}
-                      className="px-4 sm:px-6 py-4 text-sm text-gray-900"
+                      className={`px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-900 ${
+                        column.hideOnMobile ? 'hidden md:table-cell' : ''
+                      }`}
                     >
-                      <div className="min-w-[100px]">
+                      <div className="min-w-[80px] sm:min-w-[100px]">
                         {column.render
                           ? column.render(row[column.accessor], row)
                           : row[column.accessor]}
@@ -168,9 +170,14 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-6 py-8 text-center text-sm text-gray-500"
+                  className="px-4 sm:px-6 py-12 sm:py-16 text-center text-sm sm:text-base text-gray-500"
                 >
-                  No data found
+                  <div className="flex flex-col items-center gap-2">
+                    <svg className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="font-medium">No data found</p>
+                  </div>
                 </td>
               </tr>
             )}
@@ -180,24 +187,24 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-gray-700">
+        <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="text-xs sm:text-sm text-gray-600 font-medium">
               Showing{' '}
-              <span className="font-medium">
+              <span className="font-semibold text-gray-800">
                 {(currentPage - 1) * itemsPerPage + 1}
               </span>{' '}
               to{' '}
-              <span className="font-medium">
+              <span className="font-semibold text-gray-800">
                 {Math.min(currentPage * itemsPerPage, sortedData.length)}
               </span>{' '}
-              of <span className="font-medium">{sortedData.length}</span> results
+              of <span className="font-semibold text-gray-800">{sortedData.length}</span> results
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 Previous
               </button>
@@ -226,9 +233,9 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                        className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-blue-600 text-white shadow-sm'
                             : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                         }`}
                       >
@@ -242,7 +249,7 @@ function DataTable({ data, columns, itemsPerPage = 10 }) {
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 Next
               </button>
